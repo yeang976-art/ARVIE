@@ -1,10 +1,10 @@
 HELP.md
 .gradle
+.env
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-/.idea/
 
 ### STS ###
 .apt_generated
@@ -19,6 +19,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
+.idea/
 .idea
 *.iws
 *.iml
