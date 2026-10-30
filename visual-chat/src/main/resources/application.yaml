@@ -1,12 +1,12 @@
 spring:
   application:
-    name: visual-chat
+    name: arvie
 
   datasource:
-    url: jdbc:mysql://localhost:3306/visual_chat
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:arvie}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -14,3 +14,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
