@@ -1,6 +1,6 @@
 package com.example.visualchat.common.exception;
 
-import com.example.visualchat.common.dto.ApiErrorResponse;
+import com.example.visualchat.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -15,17 +15,17 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<ApiErrorResponse> handleServiceException(ServiceException e) {
+    public ResponseEntity<ApiResponse<Void>> handleServiceException(ServiceException e) {
 
         ErrorCode errorCode = e.getErrorCode();
 
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ApiErrorResponse.error(errorCode, e.getMessage()));
+                .body(ApiResponse.error(errorCode, e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
 
         String errorMessage = e.getBindingResult().getFieldErrors().stream()
                 .findFirst()
@@ -36,26 +36,26 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiErrorResponse.error(ErrorCode.INVALID_INPUT, errorMessage));
+                .body(ApiResponse.error(ErrorCode.INVALID_INPUT, errorMessage));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
 
         log.warn("MethodArgumentTypeMismatchException: {}", e.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiErrorResponse.error(ErrorCode.INVALID_INPUT, "요청 파라미터의 형식이 올바르지 않습니다."));
+                .body(ApiResponse.error(ErrorCode.INVALID_INPUT, "요청 파라미터의 형식이 올바르지 않습니다."));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleException(Exception e) {
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
 
         log.error("예상치 못한 오류 - ", e);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiErrorResponse.error(ErrorCode.SERVER_ERROR));
+                .body(ApiResponse.error(ErrorCode.SERVER_ERROR));
     }
 }
