@@ -1,5 +1,6 @@
-package com.example.visualchat.common.dto;
+package com.example.visualchat.common.response;
 
+import com.example.visualchat.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,5 +18,14 @@ public record ApiResponse<T>(String code, String message, T data) {
 
     public static ApiResponse<Void> ok(String message) {
         return new ApiResponse<>(SUCCESS_CODE, message, null);
+    }
+
+    public static ApiResponse<Void> error(ErrorCode errorCode) {
+        return new ApiResponse<Void>(errorCode.getCode(), null, null);
+    }
+
+    // 커스텀 응답 메세지용
+    public static ApiResponse<Void> error(ErrorCode errorCode, String message) {
+        return new ApiResponse<Void>(errorCode.getCode(), message, null);
     }
 }
