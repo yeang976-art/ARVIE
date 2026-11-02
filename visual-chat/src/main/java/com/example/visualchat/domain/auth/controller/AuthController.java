@@ -1,6 +1,6 @@
 package com.example.visualchat.domain.auth.controller;
 
-import com.example.visualchat.common.dto.ApiResponse;
+import com.example.visualchat.common.response.ApiResponse;
 import com.example.visualchat.domain.auth.dto.LoginRequest;
 import com.example.visualchat.domain.auth.dto.LoginResponse;
 import com.example.visualchat.domain.auth.dto.SignUpRequest;
