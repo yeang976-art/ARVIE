@@ -21,11 +21,11 @@ public record ApiResponse<T>(String code, String message, T data) {
     }
 
     public static ApiResponse<Void> error(ErrorCode errorCode) {
-        return new ApiResponse<Void>(errorCode.getCode(), null, null);
+        return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);
     }
 
     // 커스텀 응답 메세지용
     public static ApiResponse<Void> error(ErrorCode errorCode, String message) {
-        return new ApiResponse<Void>(errorCode.getCode(), message, null);
+        return new ApiResponse<>(errorCode.getCode(), message, null);
     }
 }
