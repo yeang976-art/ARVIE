@@ -192,8 +192,7 @@ public class AiRequest {
             BigDecimal reservedVie,
             Instant processingDeadlineAt
     ) {
-        if (user == null || user.getId() == null
-                || chatRoom == null || chatRoom.getId() == null
+        if (user == null || user.getId() == null || chatRoom == null || chatRoom.getId() == null
                 || accountUsageWindow == null || accountUsageWindow.getId() == null) {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "저장된 회원, 채팅방, 이용 주기가 필요합니다.");
         }
@@ -209,6 +208,11 @@ public class AiRequest {
         Instant deadline = processingDeadlineAt == null ? null : processingDeadlineAt.truncatedTo(ChronoUnit.MICROS);
         if (deadline == null || !deadline.isAfter(start)) {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "처리 기한은 요청 시작 시각보다 뒤여야 합니다.");
+        }
+
+        // [WHY] 멱등키는 빈 문자열이나 공백만으로 구성될 수 없음
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "멱등키는 공백이 아닌 값이어야 합니다.");
         }
 
         BigDecimal reservation = validateVie(reservedVie, "예약량");
