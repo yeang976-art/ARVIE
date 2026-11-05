@@ -2,6 +2,8 @@ package com.example.visualchat.domain.user.entity;
 
 import com.example.visualchat.common.config.JpaAuditingConfig;
 import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.exception.DataException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,8 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.within;
 
 @DataJpaTest
 @Import(JpaAuditingConfig.class)
@@ -27,6 +33,9 @@ class UserJpaTest {
         entityManager.persist(user);
         entityManager.flush();
         Long userId = user.getId();
+        Instant signupCompletedAt = user.getSignupCompletedAt();
+        Instant createdAt = user.getCreatedAt();
+        Instant updatedAt = user.getUpdatedAt();
         entityManager.clear();
 
         User savedUser = entityManager.find(User.class, userId);
@@ -35,9 +44,9 @@ class UserJpaTest {
         assertThat(savedUser.getNickname()).isEqualTo("arvie");
         assertThat(savedUser.getEmail()).isEqualTo("user@example.com");
         assertThat(savedUser.getPasswordHash()).isEqualTo("encoded-password");
-        assertThat(savedUser.getSignupCompletedAt()).isNotNull();
-        assertThat(savedUser.getCreatedAt()).isNotNull();
-        assertThat(savedUser.getUpdatedAt()).isNotNull();
+        assertThat(savedUser.getSignupCompletedAt()).isCloseTo(signupCompletedAt, within(1, ChronoUnit.MICROS));
+        assertThat(savedUser.getCreatedAt()).isCloseTo(createdAt, within(1, ChronoUnit.MICROS));
+        assertThat(savedUser.getUpdatedAt()).isCloseTo(updatedAt, within(1, ChronoUnit.MICROS));
     }
 
     @Test
@@ -46,10 +55,15 @@ class UserJpaTest {
         entityManager.persist(User.of("first", "same@example.com", "encoded-password"));
         entityManager.flush();
 
-        assertThatThrownBy(() -> {
-            entityManager.persist(User.of("second", "same@example.com", "encoded-password"));
-            entityManager.flush();
-        }).isInstanceOf(org.hibernate.exception.ConstraintViolationException.class);
+        assertThatExceptionOfType(ConstraintViolationException.class)
+                .isThrownBy(() -> {
+                    entityManager.persist(User.of("second", "same@example.com", "encoded-password"));
+                    entityManager.flush();
+                })
+                .satisfies(exception -> {
+                    assertThat(exception.getSQLState()).isEqualTo("23505");
+                    assertThat(exception.getSQLException().getMessage()).containsIgnoringCase("uk_users_email");
+                });
     }
 
     @Test
@@ -58,23 +72,61 @@ class UserJpaTest {
         entityManager.persist(User.of("same", "first@example.com", "encoded-password"));
         entityManager.flush();
 
-        assertThatThrownBy(() -> {
-            entityManager.persist(User.of("same", "second@example.com", "encoded-password"));
-            entityManager.flush();
-        }).isInstanceOf(org.hibernate.exception.ConstraintViolationException.class);
+        assertThatExceptionOfType(ConstraintViolationException.class)
+                .isThrownBy(() -> {
+                    entityManager.persist(User.of("same", "second@example.com", "encoded-password"));
+                    entityManager.flush();
+                })
+                .satisfies(exception -> {
+                    assertThat(exception.getSQLState()).isEqualTo("23505");
+                    assertThat(exception.getSQLException().getMessage()).containsIgnoringCase("uk_users_nickname");
+                });
     }
 
-    @ParameterizedTest(name = "nickname={0}, email={1}, passwordHash={2}")
+    @ParameterizedTest(name = "필수 컬럼 누락: {3}")
     @CsvSource(value = {
-            "NULL,user@example.com,encoded-password",
-            "arvie,NULL,encoded-password",
-            "arvie,user@example.com,NULL"
+            "NULL,user@example.com,encoded-password,nickname",
+            "arvie,NULL,encoded-password,email",
+            "arvie,user@example.com,NULL,password_hash"
     }, nullValues = "NULL")
     @DisplayName("필수 회원 정보가 없으면 저장을 거절한다")
-    void rejectsMissingRequiredInformation(String nickname, String email, String passwordHash) {
-        assertThatThrownBy(() -> {
-            entityManager.persist(User.of(nickname, email, passwordHash));
-            entityManager.flush();
-        }).isInstanceOf(jakarta.persistence.PersistenceException.class);
+    void rejectsMissingRequiredInformation(String nickname, String email, String passwordHash, String missingColumn) {
+        assertThatExceptionOfType(ConstraintViolationException.class)
+                .isThrownBy(() -> {
+                    entityManager.persist(User.of(nickname, email, passwordHash));
+                    entityManager.flush();
+                })
+                .satisfies(exception -> {
+                    assertThat(exception.getSQLState()).isEqualTo("23502");
+                    assertThat(exception.getSQLException().getMessage()).containsIgnoringCase(missingColumn);
+                });
+    }
+
+    @Test
+    @DisplayName("닉네임 50자와 이메일 254자의 저장 경계값을 허용한다")
+    void acceptsMaximumColumnLengths() {
+        User user = User.of("가".repeat(50), "a".repeat(242) + "@example.com", "encoded-password");
+        entityManager.persist(user);
+        entityManager.flush();
+        entityManager.clear();
+
+        User saved = entityManager.find(User.class, user.getId());
+
+        assertThat(saved.getNickname()).hasSize(50);
+        assertThat(saved.getEmail()).hasSize(254);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"51,254", "50,255"})
+    @DisplayName("닉네임 또는 이메일의 최대 길이를 넘으면 DB 저장을 거절한다")
+    void rejectsValuesLongerThanColumnLimits(int nicknameLength, int emailLength) {
+        String email = "a".repeat(emailLength - 12) + "@example.com";
+
+        assertThatExceptionOfType(DataException.class)
+                .isThrownBy(() -> {
+                    entityManager.persist(User.of("가".repeat(nicknameLength), email, "encoded-password"));
+                    entityManager.flush();
+                })
+                .satisfies(exception -> assertThat(exception.getSQLState()).isEqualTo("22001"));
     }
 }
