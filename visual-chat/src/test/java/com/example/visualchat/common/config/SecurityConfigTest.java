@@ -1,5 +1,6 @@
 package com.example.visualchat.common.config;
 
+import com.example.visualchat.global.config.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

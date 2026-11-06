@@ -1,6 +1,6 @@
 package com.example.visualchat.domain.account_usage_window.entity;
 
-import com.example.visualchat.common.config.JpaAuditingConfig;
+import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.user.entity.User;

@@ -1,6 +1,6 @@
 package com.example.visualchat.domain.reve.entity;
 
-import com.example.visualchat.common.config.JpaAuditingConfig;
+import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceUnitUtil;

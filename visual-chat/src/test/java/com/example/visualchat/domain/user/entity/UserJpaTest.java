@@ -1,6 +1,6 @@
 package com.example.visualchat.domain.user.entity;
 
-import com.example.visualchat.common.config.JpaAuditingConfig;
+import com.example.visualchat.global.config.JpaAuditingConfig;
 import jakarta.persistence.EntityManager;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;

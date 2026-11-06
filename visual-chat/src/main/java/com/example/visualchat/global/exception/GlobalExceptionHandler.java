@@ -1,5 +1,7 @@
-package com.example.visualchat.common.exception;
+package com.example.visualchat.global.exception;
 
+import com.example.visualchat.common.exception.ErrorCode;
+import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
