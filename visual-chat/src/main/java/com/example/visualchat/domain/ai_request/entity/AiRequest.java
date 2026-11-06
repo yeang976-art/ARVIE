@@ -104,6 +104,10 @@ public class AiRequest {
     )
     private ChatRoom chatRoom;
 
+    // [WHY] 메시지의 복합 FK가 chat_room_id를 독립된 컬럼으로 참조할 수 있도록 조회용 식별자를 매핑
+    @Column(name = "chat_room_id", nullable = false, insertable = false, updatable = false)
+    private Long chatRoomId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     // [WHY] 공유하는 user_id의 중복 쓰기를 피하면서 이용 주기의 소유권도 함께 참조
     @JoinColumns(
@@ -218,6 +222,7 @@ public class AiRequest {
         BigDecimal reservation = validateVie(reservedVie, "예약량");
         this.user = user;
         this.chatRoom = chatRoom;
+        this.chatRoomId = chatRoom.getId();
         this.accountUsageWindow = accountUsageWindow;
         this.usageWindowId = accountUsageWindow.getId();
         this.idempotencyKey = idempotencyKey;
