@@ -127,6 +127,18 @@ class MessageTest {
                 .satisfies(exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT));
     }
 
+    @ParameterizedTest
+    @CsvSource(value = {"NULL,본문", "USER,NULL", "NULL,NULL"}, nullValues = "NULL")
+    @DisplayName("발신자나 본문이 누락되면 저장 전에 공통 입력 오류로 메시지 생성을 거절한다")
+    void rejectsMissingSenderOrContent(SenderType sender, String content) {
+        Parents parents = parents((short) 90);
+
+        assertThatExceptionOfType(ServiceException.class)
+                .isThrownBy(() -> Message.of(parents.room(), parents.request(), sender, content))
+                .withMessage("발신자와 본문이 필요합니다.")
+                .satisfies(exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT));
+    }
+
     // [WHY] 메시지 생성 규칙은 실제 객체로 검증하고 부모의 저장된 식별자와 보관 설정만 제공한다.
     private Parents parents(short days) {
         ChatRoom room = mock(ChatRoom.class);

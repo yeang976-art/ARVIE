@@ -83,6 +83,10 @@ public class Message {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "저장된 채팅방과 AI 요청이 필요합니다.");
         }
 
+        if (sender == null || content == null) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "발신자와 본문이 필요합니다.");
+        }
+
         // [WHY] 실제 저장될 요청의 채팅방과 보관 기간 계산에 사용하는 채팅방이 일치하도록 검증
         if (!chatRoom.getId().equals(aiRequest.getChatRoom().getId())) {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "AI 요청과 메시지는 같은 채팅방에 속해야 합니다.");
