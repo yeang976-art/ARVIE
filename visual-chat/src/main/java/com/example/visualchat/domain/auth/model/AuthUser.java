@@ -1,4 +1,4 @@
-package com.example.visualchat.domain.auth.entity;
+package com.example.visualchat.domain.auth.model;
 
 public record AuthUser(Long userId, String nickname, String email) {
 }

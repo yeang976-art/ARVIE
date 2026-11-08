@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
@@ -86,5 +87,11 @@ public class JwtConfig {
         );
 
         return decoder;
+    }
+
+    // [WHY] 테스트에서 고정된 시간을 주입해 발급·만료 시각을 정확하게 검증
+    @Bean
+    public Clock jwtClock() {
+        return Clock.systemUTC();
     }
 }
