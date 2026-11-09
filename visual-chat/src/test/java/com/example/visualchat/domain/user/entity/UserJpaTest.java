@@ -1,6 +1,7 @@
 package com.example.visualchat.domain.user.entity;
 
 import com.example.visualchat.global.config.JpaAuditingConfig;
+import com.example.visualchat.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
@@ -25,6 +26,32 @@ class UserJpaTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    @DisplayName("이메일 조회는 닉네임이 다른 회원 중에서도 정확한 회원을 반환한다")
+    void findsMemberByEmail() {
+        entityManager.persist(User.of("first", "first@example.com", "first-hash"));
+        User expected = User.of("second", "second@example.com", "second-hash");
+        entityManager.persist(expected);
+        entityManager.flush();
+        Long expectedId = expected.getId();
+        entityManager.clear();
+
+        assertThat(userRepository.findByEmail("second@example.com"))
+                .hasValueSatisfying(user -> {
+                    assertThat(user.getId()).isEqualTo(expectedId);
+                    assertThat(user.getPasswordHash()).isEqualTo("second-hash");
+                });
+    }
+
+    @Test
+    @DisplayName("등록되지 않은 이메일 조회는 빈 결과를 반환한다")
+    void returnsEmptyForUnknownEmail() {
+        assertThat(userRepository.findByEmail("missing@example.com")).isEmpty();
+    }
 
     @Test
     @DisplayName("회원 저장 후 다시 조회해도 가입 정보와 감사 시각이 유지된다")

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.web.SecurityFilterChain;
+import com.example.visualchat.support.JwtTestFixtures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.datasource.username=sa",
         "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "jwt.issuer=" + JwtTestFixtures.ISSUER,
+        "jwt.secret=" + JwtTestFixtures.SECRET,
+        "jwt.access-token-ttl=30m"
 })
 class VisualChatApplicationTests {
 
