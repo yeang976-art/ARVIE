@@ -4,11 +4,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.MappedJwtClaimSetConverter;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
@@ -18,6 +20,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Collections;
 
 /** [ROLE] JWT 설정을 검증하고 서명 키·발급기·검증기·시간 제공 빈을 구성 */
 @Configuration
@@ -72,6 +75,17 @@ public class JwtConfig {
                 .withSecretKey(jwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+
+        // [WHY] 기본 변환기가 누락된 iat를 보완하기 전에 원본 발급 시각의 존재 여부를 검증
+        MappedJwtClaimSetConverter claimConverter = MappedJwtClaimSetConverter
+                .withDefaults(Collections.emptyMap());
+
+        decoder.setClaimSetConverter(claims -> {
+            if (claims.get("iat") == null) {
+                throw new BadJwtException("토큰에 발급 시각이 필요합니다.");
+            }
+            return claimConverter.convert(claims);
+        });
 
         // [NOTE] 기본 시간 검증에 발급자 및 필수 클레임 검증을 추가
         decoder.setJwtValidator(
