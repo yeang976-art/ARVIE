@@ -1,5 +1,6 @@
 package com.example.visualchat.domain.ai_request.enums;
 
+/** [ROLE] AI 요청의 처리 상태와 허용되는 상태 전이를 정의 */
 public enum AiRequestStatus {
     PROCESSING {
         @Override

@@ -19,11 +19,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
+/** [ROLE] JWT 설정을 검증하고 서명 키·발급기·검증기·시간 제공 빈을 구성 */
 @Configuration
 // [NOTE] JwtProperties를 빈으로 등록하고 jwt 접두사의 설정 바인딩·검증을 활성화
 @EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfig {
 
+    // [TOPIC] 유효기간·서명 키 검증과 키 객체 구성
     // [WHY] 발급기와 검증기가 동일한 서명 키를 사용하도록 빈으로 등록
     @Bean
     public SecretKey jwtSecretKey(JwtProperties properties) {
@@ -54,6 +56,7 @@ public class JwtConfig {
         return new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
+    // [TOPIC] HS256 토큰 발급기와 검증기 등록
     @Bean
     public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
         // [NOTE] 전달받은 클레임으로 JWT를 만들고 비밀 키로 서명
@@ -89,6 +92,7 @@ public class JwtConfig {
         return decoder;
     }
 
+    // [TOPIC] 토큰 발급 시각을 제공할 공통 시계 등록
     // [WHY] 테스트에서 고정된 시간을 주입해 발급·만료 시각을 정확하게 검증
     @Bean
     public Clock jwtClock() {

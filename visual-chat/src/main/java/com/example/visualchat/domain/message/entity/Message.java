@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/** [ROLE] 채팅 메시지의 본문·발신자·전송 시각·만료 시각을 기록 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

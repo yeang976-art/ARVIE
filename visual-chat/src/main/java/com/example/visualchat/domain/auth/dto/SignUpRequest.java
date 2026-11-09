@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+/** [ROLE] 회원가입 입력값을 전달하고 필수값·이메일·비밀번호 형식을 검증 */
 public record SignUpRequest(
         @NotBlank @Size(max = 50) String nickname,
         @NotBlank @Email String email,

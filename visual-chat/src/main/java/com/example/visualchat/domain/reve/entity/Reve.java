@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+/** [ROLE] 레브의 기본 정보·시스템 프롬프트·체험 배정 설정을 관리 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

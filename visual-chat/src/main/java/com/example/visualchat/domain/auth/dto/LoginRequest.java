@@ -3,6 +3,7 @@ package com.example.visualchat.domain.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+/** [ROLE] 로그인 이메일과 비밀번호를 전달하고 입력 형식을 검증 */
 public record LoginRequest(
         @NotBlank
         @Email

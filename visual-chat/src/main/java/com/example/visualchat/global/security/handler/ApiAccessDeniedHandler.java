@@ -15,7 +15,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/** [ROLE] 권한 부족 시 403 */
+/** [ROLE] 접근 거부를 HTTP 403과 공통 오류 응답으로 반환 */
 @Component
 @RequiredArgsConstructor
 public class ApiAccessDeniedHandler implements AccessDeniedHandler {

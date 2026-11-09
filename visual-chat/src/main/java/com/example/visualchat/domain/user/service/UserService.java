@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+/** [ROLE] 회원 저장소를 통해 user 도메인의 조회 기능을 제공 */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

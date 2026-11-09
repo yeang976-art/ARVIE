@@ -25,6 +25,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/** [ROLE] 계정의 이용 기간과 VIE 제공량·사용량·활성 예약량을 관리 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -90,6 +91,7 @@ public class AccountUsageWindow extends BaseTimeEntity {
     @Column(nullable = false)
     private Long version;
 
+    // [TOPIC] 가입 완료 시각을 기준으로 첫 이용 주기 생성
     private AccountUsageWindow(User user) {
         this.user = user;
         this.periodStartAt = user.getSignupCompletedAt();
@@ -103,6 +105,7 @@ public class AccountUsageWindow extends BaseTimeEntity {
         return new AccountUsageWindow(user);
     }
 
+    // [TOPIC] 잔여 VIE 조회와 추가 이용량 예약
     // [WHY] 제공량은 주기 전체의 한도이므로 유지하고, 사용량과 활성 예약량을 제외해 잔여량을 계산
     public BigDecimal getRemainingVie() {
         return allowanceVie.subtract(usedVie).subtract(reservedVie);

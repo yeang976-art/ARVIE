@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/** [ROLE] 인증 실패 시 401 */
+/** [ROLE] 인증 정보 누락과 토큰 인증 실패를 HTTP 401 공통 응답으로 반환 */
 @Component
 @RequiredArgsConstructor
 public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {

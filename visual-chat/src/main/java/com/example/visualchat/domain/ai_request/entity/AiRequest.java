@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+/** [ROLE] AI 요청의 식별 정보와 처리 상태·시간·VIE 정산 기록을 관리 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -135,6 +136,7 @@ public class AiRequest {
     @Column(name = "usage_window_id", nullable = false)
     private Long usageWindowId;
 
+    // [TOPIC] 멱등성 식별값과 AI 제공자 정보
     @Column(name = "idempotency_key", length = 128, nullable = false)
     private String idempotencyKey;
 
@@ -154,6 +156,7 @@ public class AiRequest {
     @Column(name = "provider_request_id")
     private String providerRequestId;
 
+    // [TOPIC] 토큰 사용량과 VIE 정산 기록
     @Column(name = "input_tokens")
     private Long inputTokens;
 
@@ -172,6 +175,7 @@ public class AiRequest {
     @Column(name = "error_code", length = 64)
     private String errorCode;
 
+    // [TOPIC] 처리 시작·기한·완료 시각
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
 
@@ -185,6 +189,7 @@ public class AiRequest {
     @Column(nullable = false)
     private Long version;
 
+    // [TOPIC] 요청 생성과 초기 상태 설정
     private AiRequest(
             User user,
             ChatRoom chatRoom,
@@ -251,6 +256,7 @@ public class AiRequest {
                 provider, modelName, reservedVie, processingDeadlineAt);
     }
 
+    // [TOPIC] 요청 완료 처리와 성공·실패 정산
     public void success(BigDecimal chargedVie) {
         BigDecimal charge = validateVie(chargedVie, "차감량");
         changeStatus(AiRequestStatus.SUCCEEDED);
@@ -268,6 +274,7 @@ public class AiRequest {
         this.finishedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
+    // [TOPIC] 정산 수량과 상태 전이 검증
     // [WHY] DB 저장 시 반올림 또는 범위 초과로 정산 금액이 달라지지 않도록 검증
     private static BigDecimal validateVie(BigDecimal vie, String fieldName) {
         if (vie == null || vie.signum() < 0) {

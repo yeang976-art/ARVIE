@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/** [ROLE] 인증 API의 요청을 검증하고 로그인 처리 결과를 공통 응답으로 반환 */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

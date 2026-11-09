@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** [ROLE] 회원 조회·비밀번호 검증·토큰 발급을 조율하는 로그인 진입점 */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
 
+/** [ROLE] 외부 JWT 설정의 발급자·서명 키·유효기간을 바인딩하고 필수값을 검증 */
 @Validated // [WHY] 필수 설정이 누락된 상태로 서버가 실행되지 않도록 검증
 @ConfigurationProperties(prefix = "jwt") // [NOTE] jwt 접두사의 외부 설정을 이 객체에 바인딩
 public record JwtProperties(

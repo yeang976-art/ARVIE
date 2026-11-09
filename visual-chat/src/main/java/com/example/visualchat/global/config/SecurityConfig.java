@@ -9,14 +9,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/** [ROLE] 비밀번호 인코더와 요청 접근·세션 정책을 구성 */
 @Configuration
 public class SecurityConfig {
 
+    // [TOPIC] 비밀번호 해시 생성·검증 구성
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // 비밀번호를 단방향 해시로 저장
     }
 
+    // [TOPIC] 요청 접근과 세션 정책 구성
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http

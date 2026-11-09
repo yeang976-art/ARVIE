@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/** [ROLE] 회원 ID와 발급·만료 시각을 담은 HS256 Access Token을 발급 */
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider implements TokenIssuer {
