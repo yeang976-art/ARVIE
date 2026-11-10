@@ -22,6 +22,7 @@ public enum ErrorCode {
 
     // [TOPIC] 레브 오류 코드
     TRIAL_REVE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERROR_REVE_1", "현재 체험 레브를 배정할 수 없습니다. 잠시 후 다시 시도해 주세요."),
+    INVALID_TRIAL_REVE_WEIGHT(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_REVE_2", "체험 레브의 배정 가중치 설정이 올바르지 않습니다."),
 
     // [TOPIC] AI 요청 오류 코드
     INVALID_AI_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "ERROR_AI_REQUEST_1", "유효하지 않은 AI 요청 상태");
