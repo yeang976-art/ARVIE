@@ -20,6 +20,9 @@ public enum ErrorCode {
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "ERROR_AUTH_4", "인증 토큰이 만료되었습니다. 다시 로그인해 주세요."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ERROR_AUTH_5", "해당 작업을 수행할 권한이 없습니다."),
 
+    // [TOPIC] 레브 오류 코드
+    TRIAL_REVE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERROR_REVE_1", "현재 체험 레브를 배정할 수 없습니다. 잠시 후 다시 시도해 주세요."),
+
     // [TOPIC] AI 요청 오류 코드
     INVALID_AI_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "ERROR_AI_REQUEST_1", "유효하지 않은 AI 요청 상태");
 
