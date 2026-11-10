@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+/** [ROLE] 회원의 식별 정보·비밀번호 해시·가입 완료 시각을 관리 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

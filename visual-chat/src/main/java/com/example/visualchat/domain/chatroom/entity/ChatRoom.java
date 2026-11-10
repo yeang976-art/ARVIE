@@ -23,6 +23,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/** [ROLE] 회원에게 배정된 레브의 채팅방과 메시지 보관 기간을 관리 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

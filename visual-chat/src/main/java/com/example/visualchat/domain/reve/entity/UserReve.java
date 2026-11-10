@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+/** [ROLE] 회원에게 배정된 레브와 배정 시각을 기록 */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

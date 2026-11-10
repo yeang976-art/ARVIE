@@ -40,6 +40,7 @@ jobs:
       POSTGRES_USER: arvie
       POSTGRES_PASSWORD: arvie_ci_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      AUTH_DUMMY_PASSWORD_HASH: ${{ secrets.AUTH_DUMMY_PASSWORD_HASH }}
 
     steps:
       - name: Checkout
