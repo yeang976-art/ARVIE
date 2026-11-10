@@ -21,3 +21,6 @@ jwt:
   issuer: arvie # [NOTE] 발급 토큰의 iss 클레임에 사용할 서비스 식별값
   secret: ${JWT_SECRET} # [CAUTION] 서명 키는 환경변수로 주입하며 기본값을 두지 않음
   access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:30m} # [NOTE] 별도 환경변수 지정이 없으면 Access Token 유효기간은 30분
+
+auth:
+  dummy-password-hash: ${AUTH_DUMMY_PASSWORD_HASH}

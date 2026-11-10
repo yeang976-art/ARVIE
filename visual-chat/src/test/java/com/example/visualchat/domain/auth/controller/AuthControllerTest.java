@@ -11,6 +11,7 @@ import com.example.visualchat.global.security.handler.ApiAccessDeniedHandler;
 import com.example.visualchat.global.security.handler.ApiAuthenticationEntryPoint;
 import com.example.visualchat.global.security.jwt.JwtConfig;
 import com.example.visualchat.global.security.jwt.JwtTokenProvider;
+import com.example.visualchat.support.AuthTestFixtures;
 import com.example.visualchat.support.JwtTestFixtures;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +25,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -60,6 +63,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-token-ttl=30m"
 })
 class AuthControllerTest {
+
+    @DynamicPropertySource
+    static void registerAuthProperties(DynamicPropertyRegistry registry) {
+        // [WHY] HTTP 인증 테스트가 실제 서버의 더미 해시 설정에 의존하지 않도록 분리
+        registry.add("auth.dummy-password-hash", AuthTestFixtures::dummyPasswordHash);
+    }
 
     @Autowired
     private MockMvc mockMvc;
