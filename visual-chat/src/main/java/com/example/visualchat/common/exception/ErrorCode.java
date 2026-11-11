@@ -24,6 +24,7 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "ERROR_USER_1", "이미 사용 중인 이메일입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "ERROR_USER_2", "이미 사용 중인 닉네임입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "ERROR_USER_3", "회원 정보를 찾을 수 없습니다."),
+    USER_REVE_NOT_FOUND(HttpStatus.NOT_FOUND, "ERROR_USER_4", "배정된 레브를 찾을 수 없습니다."),
 
     // [TOPIC] 레브 오류 코드
     TRIAL_REVE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERROR_REVE_1", "현재 체험 레브를 배정할 수 없습니다. 잠시 후 다시 시도해 주세요."),

@@ -4,6 +4,8 @@ import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.common.response.ApiResponse;
 import com.example.visualchat.domain.user.dto.UserMeResponse;
+import com.example.visualchat.domain.user.dto.UserReveResponse;
+import com.example.visualchat.domain.user.service.UserReveService;
 import com.example.visualchat.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +15,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** [ROLE] 인증된 회원의 본인 정보 조회 요청을 처리 */
+/** [ROLE] 인증된 회원의 본인 정보와 배정 레브 조회 요청을 처리 */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final UserReveService userReveService;
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserMeResponse>> getMyInfo(@AuthenticationPrincipal Jwt jwt) {
@@ -27,6 +30,14 @@ public class UserController {
         long userId = extractUserId(jwt);
 
         return ResponseEntity.ok(ApiResponse.ok(userService.getMyInfo(userId)));
+    }
+
+    @GetMapping("/me/reves")
+    public ResponseEntity<ApiResponse<UserReveResponse>> getMyReve(@AuthenticationPrincipal Jwt jwt) {
+        // [WHY] 조회 대상을 인증된 회원으로 제한해 타인의 배정 정보 접근을 방지
+        long userId = extractUserId(jwt);
+
+        return ResponseEntity.ok(ApiResponse.ok(userReveService.getMyReve(userId)));
     }
 
     // [TOPIC] JWT의 회원 식별값을 양수 Long으로 변환
