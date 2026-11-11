@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.auth.service;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.domain.reve.entity.Reve;
 import com.example.visualchat.domain.reve.repository.ReveRepository;
@@ -93,7 +95,7 @@ class PostgresSignUpConcurrencyTest {
         jdbc.execute("drop trigger if exists signup_test_window_failure on account_usage_windows");
         jdbc.execute("drop function if exists signup_test_window_failure()");
         jdbc.execute("truncate table messages, ai_requests, chat_rooms, user_reves, account_usage_windows, users, reves restart identity cascade");
-        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", null, "소개", "설정", BigDecimal.ONE));
+        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", Mbti.ENFP, "소개", "설정", BigDecimal.ONE));
     }
 
     @Test

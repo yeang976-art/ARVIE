@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.ai_request.entity;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
@@ -377,7 +379,7 @@ class AiRequestJpaTest {
     private Parents parents(String suffix) {
         User user = User.of("user-" + suffix, suffix + "@example.com", "encoded-password");
         entityManager.persist(user);
-        Reve reve = Reve.of("REVE_" + suffix, "루미", null, "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_" + suffix, "루미", Mbti.INFP, "소개", "설정", BigDecimal.ONE);
         entityManager.persist(reve);
         UserReve assignment = UserReve.of(user, reve);
         entityManager.persist(assignment);

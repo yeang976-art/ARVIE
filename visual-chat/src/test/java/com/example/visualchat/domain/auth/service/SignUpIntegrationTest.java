@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.auth.service;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.domain.account_usage_window.service.AccountUsageWindowService;
 import com.example.visualchat.domain.reve.entity.Reve;
@@ -65,7 +67,7 @@ class SignUpIntegrationTest {
         for (String table : new String[]{"user_reves", "account_usage_windows", "users", "reves"}) {
             jdbc.update("delete from " + table);
         }
-        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", null, "소개", "설정", BigDecimal.ONE));
+        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", Mbti.ENFP, "소개", "설정", BigDecimal.ONE));
     }
 
     @Test

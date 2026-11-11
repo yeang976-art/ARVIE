@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.chatroom.entity;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.domain.reve.entity.Reve;
 import com.example.visualchat.domain.reve.entity.UserReve;
@@ -244,7 +246,7 @@ class ChatRoomJpaTest {
 
     private UserReve persistAssignment(String suffix) {
         User user = persistUser(suffix);
-        Reve reve = Reve.of("REVE_" + suffix, "루미", null, "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_" + suffix, "루미", Mbti.INFP, "소개", "설정", BigDecimal.ONE);
         entityManager.persist(reve);
         UserReve assignment = UserReve.of(user, reve);
         entityManager.persist(assignment);

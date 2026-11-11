@@ -39,7 +39,7 @@ class ReveTest {
     void acceptsPositiveTrialWeights(String value) {
         BigDecimal weight = new BigDecimal(value);
 
-        Reve reve = Reve.of("REVE_001", "루미", null, "소개", "설정", weight);
+        Reve reve = Reve.of("REVE_001", "루미", Mbti.INFP, "소개", "설정", weight);
 
         assertThat(reve.getTrialEnabled()).isTrue();
         assertThat(reve.getTrialWeight()).isEqualByComparingTo(weight);
@@ -53,19 +53,20 @@ class ReveTest {
         BigDecimal weight = value == null ? null : new BigDecimal(value);
 
         assertThatExceptionOfType(ServiceException.class)
-                .isThrownBy(() -> Reve.of("REVE_001", "루미", null, "소개", "설정", weight))
+                .isThrownBy(() -> Reve.of("REVE_001", "루미", Mbti.INFP, "소개", "설정", weight))
                 .satisfies(exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT));
     }
 
     @Test
     @DisplayName("체험 대상에서 반복 제외해도 원본 설정과 가중치는 유지된다")
     void excludesFromTrialWithoutChangingOriginalSettings() {
-        Reve reve = Reve.of("REVE_001", "루미", null, "소개", "설정", new BigDecimal("1.25"));
+        Reve reve = Reve.of("REVE_001", "루미", Mbti.INFP, "소개", "설정", new BigDecimal("1.25"));
 
         reve.exceptTrial();
         reve.exceptTrial();
 
         assertThat(reve.getTrialEnabled()).isFalse();
+        assertThat(reve.getMbti()).isEqualTo(Mbti.INFP);
         assertThat(reve.getCode()).isEqualTo("REVE_001");
         assertThat(reve.getName()).isEqualTo("루미");
         assertThat(reve.getDescription()).isEqualTo("소개");
