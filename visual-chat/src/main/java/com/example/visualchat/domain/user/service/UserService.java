@@ -2,6 +2,7 @@ package com.example.visualchat.domain.user.service;
 
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
+import com.example.visualchat.domain.user.dto.UserMeResponse;
 import com.example.visualchat.domain.user.entity.User;
 import com.example.visualchat.domain.user.repository.UserRepository;
 import com.example.visualchat.domain.user.util.EmailNormalizer;
@@ -41,5 +42,14 @@ public class UserService {
 
         // [WHY] 사전 조회 이후의 동시 중복 가입은 DB 유일성 제약으로 최종 차단
         return userRepository.save(user);
+    }
+
+    // [TOPIC] 인증된 회원의 본인 정보 조회
+    public UserMeResponse getMyInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        // [CAUTION] 비밀번호 해시가 응답에 포함되지 않도록 전용 DTO로 변환
+        return UserMeResponse.from(user);
     }
 }
