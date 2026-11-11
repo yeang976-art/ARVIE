@@ -5,6 +5,7 @@ import com.example.visualchat.domain.auth.dto.LoginRequest;
 import com.example.visualchat.domain.auth.dto.LoginResponse;
 import com.example.visualchat.domain.auth.dto.SignUpRequest;
 import com.example.visualchat.domain.auth.service.AuthCommand;
+import com.example.visualchat.domain.auth.service.SignUpCommand;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AuthController {
 
     private final AuthCommand authCommand;
+    private final SignUpCommand signUpCommand;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody SignUpRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        signUpCommand.signUp(request);
+
+        // [NOTE] Command의 트랜잭션 커밋이 완료된 뒤 성공 응답 생성
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("회원가입이 완료되었습니다."));
     }
 
     @PostMapping("/login")
