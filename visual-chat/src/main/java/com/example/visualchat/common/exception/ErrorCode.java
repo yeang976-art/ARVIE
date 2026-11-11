@@ -20,6 +20,10 @@ public enum ErrorCode {
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "ERROR_AUTH_4", "인증 토큰이 만료되었습니다. 다시 로그인해 주세요."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ERROR_AUTH_5", "해당 작업을 수행할 권한이 없습니다."),
 
+    // [TOPIC] 회원 오류 코드
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "ERROR_USER_1", "이미 사용 중인 이메일입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "ERROR_USER_2", "이미 사용 중인 닉네임입니다."),
+
     // [TOPIC] 레브 오류 코드
     TRIAL_REVE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERROR_REVE_1", "현재 체험 레브를 배정할 수 없습니다. 잠시 후 다시 시도해 주세요."),
     INVALID_TRIAL_REVE_WEIGHT(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_REVE_2", "체험 레브의 배정 가중치 설정이 올바르지 않습니다."),

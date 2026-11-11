@@ -35,6 +35,25 @@ class UserTest {
         assertNewUser(user, beforeCreation, afterCreation);
     }
 
+    @Test
+    @DisplayName("정적 팩터리는 이메일 도메인을 정규화하고 로컬 부분의 대소문자를 보존한다")
+    void factoryNormalizesEmailDomain() {
+        User user = User.of("arvie", "User@EXAMPLE.COM", "encoded-password");
+
+        assertThat(user.getEmail()).isEqualTo("User@example.com");
+    }
+
+    @Test
+    @DisplayName("빌더 생성도 정적 팩터리와 같은 이메일 정규화 규칙을 적용한다")
+    void builderNormalizesEmailDomain() {
+        User user = User.builder()
+                .nickname("arvie")
+                .email("User@EXAMPLE.COM")
+                .passwordHash("encoded-password")
+                .build();
+
+        assertThat(user.getEmail()).isEqualTo("User@example.com");
+    }
     private static void assertNewUser(User user, Instant beforeCreation, Instant afterCreation) {
         assertThat(user.getId()).isNull();
         assertThat(user.getNickname()).isEqualTo("arvie");

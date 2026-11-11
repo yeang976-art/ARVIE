@@ -3,7 +3,8 @@ package com.example.visualchat.common.response;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-/** [ROLE] 성공·실패 응답을 code·message·data 구조로 전달 */
+/** [ROLE] API의 성공·실패 결과를 code·message·data 형식으로 전달 */
+// [NOTE] 값이 없는 message와 data는 JSON 응답에서 제외
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T>(String code, String message, T data) {
 
@@ -27,7 +28,12 @@ public record ApiResponse<T>(String code, String message, T data) {
         return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);
     }
 
-    // 커스텀 응답 메세지용
+    // [NOTE] 필드별 검증 오류 등 상세 정보를 data에 포함해 전달
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message, T data) {
+        return new ApiResponse<>(errorCode.getCode(), message, data);
+    }
+
+    // [NOTE] 기본 오류 메시지를 호출자가 지정한 메시지로 대체
     public static ApiResponse<Void> error(ErrorCode errorCode, String message) {
         return new ApiResponse<>(errorCode.getCode(), message, null);
     }
