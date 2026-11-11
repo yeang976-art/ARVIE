@@ -9,6 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -42,6 +45,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
         "jwt.access-token-ttl=30m"
 })
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 @EnabledIf(value = "hasPostgresTestDatabase", disabledReason = "전용 PostgreSQL 테스트 DB 설정 시 실행")
 class PostgresSignUpConcurrencyTest {
     @Autowired private MockMvc mockMvc;
@@ -94,8 +98,10 @@ class PostgresSignUpConcurrencyTest {
 
     @Test
     @DisplayName("두 요청이 이메일 사전 검사를 모두 통과해도 DB가 한 건만 허용하고 나머지는 이메일 중복 409를 반환한다")
-    void rejectsConcurrentDuplicateEmail() throws Exception {
+    void rejectsConcurrentDuplicateEmail(CapturedOutput output) throws Exception {
         assertConcurrentSignups("first", "same@example.com", "second", "same@example.com", ErrorCode.DUPLICATE_EMAIL);
+        // [CAUTION] DB 유일성 위반의 상세 메시지가 애플리케이션 로그에 이메일을 노출하지 않아야 함
+        assertThat(output.getAll()).doesNotContain("same@example.com");
     }
 
     @Test
@@ -133,6 +139,14 @@ class PostgresSignUpConcurrencyTest {
         assertThat(jdbc.queryForObject("select count(*) from reves", Integer.class)).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("도메인 표기가 다른 동시 가입도 한 건만 허용하고 오류 로그에 이메일을 남기지 않는다")
+    void rejectsConcurrentDuplicateWithDifferentDomainCase(CapturedOutput output) throws Exception {
+        assertConcurrentSignups("first", "User@EXAMPLE.COM", "second", "User@example.com", ErrorCode.DUPLICATE_EMAIL);
+
+        assertThat(jdbc.queryForObject("select email from users", String.class)).isEqualTo("User@example.com");
+        assertThat(output.getAll()).doesNotContain("User@EXAMPLE.COM", "User@example.com");
+    }
     private void assertConcurrentSignups(String firstNickname, String firstEmail,
                                          String secondNickname, String secondEmail, ErrorCode expected) throws Exception {
         jdbc.execute("""

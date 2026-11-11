@@ -130,6 +130,29 @@ class SignUpIntegrationTest {
         assertCounts(0);
     }
 
+    @Test
+    @DisplayName("가입 시 도메인을 정규화해 저장하고 도메인 대소문자가 다른 이메일로도 로그인할 수 있다")
+    void signsUpAndLogsInWithDifferentDomainCase() throws Exception {
+        signup("tester", "User@EXAMPLE.COM").andExpect(status().isCreated());
+
+        assertThat(jdbc.queryForObject("select email from users", String.class)).isEqualTo("User@example.com");
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "identifier", "User@ExAmPlE.CoM", "password", "Signup1!"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.token").isNotEmpty());
+        assertCounts(1);
+    }
+
+    @Test
+    @DisplayName("도메인의 대소문자만 다른 이메일로 재가입하면 중복으로 거절한다")
+    void rejectsDuplicateEmailWithDifferentDomainCase() throws Exception {
+        signup("first", "User@EXAMPLE.COM").andExpect(status().isCreated());
+        signup("second", "User@example.com").andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(ErrorCode.DUPLICATE_EMAIL.getCode()));
+        assertCounts(1);
+    }
     private ResultActions signup(String nickname, String email) throws Exception {
         return mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("nickname", nickname, "email", email, "password", "Signup1!"))));
