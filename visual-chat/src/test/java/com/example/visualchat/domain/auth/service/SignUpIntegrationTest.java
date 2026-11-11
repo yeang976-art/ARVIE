@@ -65,7 +65,7 @@ class SignUpIntegrationTest {
         for (String table : new String[]{"user_reves", "account_usage_windows", "users", "reves"}) {
             jdbc.update("delete from " + table);
         }
-        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", "소개", "설정", BigDecimal.ONE));
+        reveRepository.saveAndFlush(Reve.of("TRIAL", "체험 레브", null, "소개", "설정", BigDecimal.ONE));
     }
 
     @Test

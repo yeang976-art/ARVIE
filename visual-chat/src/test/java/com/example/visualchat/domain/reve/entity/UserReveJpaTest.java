@@ -214,7 +214,7 @@ class UserReveJpaTest {
     }
 
     private Reve persistReve(String suffix) {
-        Reve reve = Reve.of("REVE_" + suffix, "루미", "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_" + suffix, "루미", null, "소개", "설정", BigDecimal.ONE);
         entityManager.persist(reve);
         return reve;
     }

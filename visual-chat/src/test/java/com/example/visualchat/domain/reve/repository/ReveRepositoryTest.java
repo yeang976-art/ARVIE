@@ -95,7 +95,7 @@ class ReveRepositoryTest {
     }
 
     private Reve persist(String code, BigDecimal weight) {
-        Reve reve = Reve.of(code, "더미 레브 " + code, "테스트 소개", "테스트 설정", weight);
+        Reve reve = Reve.of(code, "더미 레브 " + code, null, "테스트 소개", "테스트 설정", weight);
         entityManager.persist(reve);
         return reve;
     }

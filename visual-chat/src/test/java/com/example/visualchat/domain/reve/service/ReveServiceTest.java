@@ -179,6 +179,6 @@ class ReveServiceTest {
     }
 
     private Reve reve(String code, String weight) {
-        return Reve.of(code, "더미 레브 " + code, "테스트 소개", "테스트 설정", new BigDecimal(weight));
+        return Reve.of(code, "더미 레브 " + code, null, "테스트 소개", "테스트 설정", new BigDecimal(weight));
     }
 }

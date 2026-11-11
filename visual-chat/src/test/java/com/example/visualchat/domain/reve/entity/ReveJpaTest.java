@@ -1,6 +1,7 @@
 package com.example.visualchat.domain.reve.entity;
 
 import com.example.visualchat.global.config.JpaAuditingConfig;
+import com.example.visualchat.domain.reve.enums.Mbti;
 import jakarta.persistence.EntityManager;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -25,6 +28,25 @@ import static org.assertj.core.api.Assertions.within;
 @Import(JpaAuditingConfig.class)
 class ReveJpaTest {
 
+    @ParameterizedTest(name = "MBTI 저장 사례 {index}: {0}")
+    @EnumSource(Mbti.class)
+    @NullSource
+    @DisplayName("모든 MBTI와 미지정 값을 저장하고 다시 조회할 수 있다")
+    void persistsMbtiAsNameOrNull(Mbti mbti) {
+        Reve reve = Reve.of("REVE_MBTI", "루미", mbti, "소개", "설정", BigDecimal.ONE);
+        entityManager.persist(reve);
+        entityManager.flush();
+        Long id = reve.getId();
+        entityManager.clear();
+
+        Reve savedReve = entityManager.find(Reve.class, id);
+        assertThat(savedReve.getMbti()).isEqualTo(mbti);
+        // [WHY] 순서 번호 대신 유형 이름이 저장되는지 실제 컬럼 값을 확인
+        String storedMbti = (String) entityManager.createNativeQuery("select mbti from reves where id = :id", String.class)
+                .setParameter("id", id)
+                .getSingleResult();
+        assertThat(storedMbti).isEqualTo(mbti == null ? null : mbti.name());
+    }
     @Autowired
     private EntityManager entityManager;
 
@@ -33,7 +55,7 @@ class ReveJpaTest {
     void persistsOriginalSettingsAndAuditingTimestamps() {
         String description = "레브 소개 ".repeat(100);
         String systemPrompt = "서버 전용 성격과 말투 설정 ".repeat(100);
-        Reve reve = Reve.of("REVE_001", "루미", description, systemPrompt, new BigDecimal("12.345678"));
+        Reve reve = Reve.of("REVE_001", "루미", null, description, systemPrompt, new BigDecimal("12.345678"));
         entityManager.persist(reve);
         entityManager.flush();
         Long id = reve.getId();
@@ -57,12 +79,12 @@ class ReveJpaTest {
     @Test
     @DisplayName("이름이 달라도 서버 코드가 같으면 중복 저장을 거절한다")
     void rejectsDuplicateServerCode() {
-        entityManager.persist(Reve.of("REVE_001", "루미", "소개", "설정", BigDecimal.ONE));
+        entityManager.persist(Reve.of("REVE_001", "루미", null, "소개", "설정", BigDecimal.ONE));
         entityManager.flush();
 
         assertThatExceptionOfType(ConstraintViolationException.class)
                 .isThrownBy(() -> {
-                    entityManager.persist(Reve.of("REVE_001", "다른 레브", "다른 소개", "다른 설정", BigDecimal.ONE));
+                    entityManager.persist(Reve.of("REVE_001", "다른 레브", null, "다른 소개", "다른 설정", BigDecimal.ONE));
                     entityManager.flush();
                 })
                 .satisfies(exception -> assertThat(exception.getSQLState()).isEqualTo("23505"));
@@ -71,7 +93,7 @@ class ReveJpaTest {
     @Test
     @DisplayName("코드 64자, 이름 100자, 가중치 numeric(12,6)의 최댓값을 저장할 수 있다")
     void acceptsMaximumColumnValues() {
-        Reve reve = Reve.of("R".repeat(64), "가".repeat(100), "소개", "설정", new BigDecimal("999999.999999"));
+        Reve reve = Reve.of("R".repeat(64), "가".repeat(100), null, "소개", "설정", new BigDecimal("999999.999999"));
         entityManager.persist(reve);
         entityManager.flush();
         entityManager.clear();
@@ -89,7 +111,7 @@ class ReveJpaTest {
     void rejectsValuesLongerThanColumnLimits(int codeLength, int nameLength) {
         assertThatExceptionOfType(DataException.class)
                 .isThrownBy(() -> {
-                    entityManager.persist(Reve.of("R".repeat(codeLength), "가".repeat(nameLength), "소개", "설정", BigDecimal.ONE));
+                    entityManager.persist(Reve.of("R".repeat(codeLength), "가".repeat(nameLength), null, "소개", "설정", BigDecimal.ONE));
                     entityManager.flush();
                 })
                 .satisfies(exception -> assertThat(exception.getSQLState()).isEqualTo("22001"));
@@ -100,7 +122,7 @@ class ReveJpaTest {
     void rejectsWeightOutsideNumericPrecision() {
         assertThatExceptionOfType(DataException.class)
                 .isThrownBy(() -> {
-                    entityManager.persist(Reve.of("REVE_001", "루미", "소개", "설정", new BigDecimal("1000000")));
+                    entityManager.persist(Reve.of("REVE_001", "루미", null, "소개", "설정", new BigDecimal("1000000")));
                     entityManager.flush();
                 });
     }
@@ -126,7 +148,7 @@ class ReveJpaTest {
     @Test
     @DisplayName("체험 배정 제외 상태는 저장 후 다시 조회해도 유지된다")
     void persistsTrialExclusion() {
-        Reve reve = Reve.of("REVE_001", "루미", "소개", "설정", new BigDecimal("1.25"));
+        Reve reve = Reve.of("REVE_001", "루미", null, "소개", "설정", new BigDecimal("1.25"));
         entityManager.persist(reve);
         entityManager.flush();
 

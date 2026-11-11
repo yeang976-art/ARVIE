@@ -244,7 +244,7 @@ class ChatRoomJpaTest {
 
     private UserReve persistAssignment(String suffix) {
         User user = persistUser(suffix);
-        Reve reve = Reve.of("REVE_" + suffix, "루미", "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_" + suffix, "루미", null, "소개", "설정", BigDecimal.ONE);
         entityManager.persist(reve);
         UserReve assignment = UserReve.of(user, reve);
         entityManager.persist(assignment);

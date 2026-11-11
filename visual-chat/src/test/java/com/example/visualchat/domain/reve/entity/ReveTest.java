@@ -2,6 +2,7 @@ package com.example.visualchat.domain.reve.entity;
 
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
+import com.example.visualchat.domain.reve.enums.Mbti;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,11 +21,12 @@ class ReveTest {
     void createsActiveTrialReve() {
         BigDecimal weight = new BigDecimal("1.250000");
 
-        Reve reve = Reve.of("REVE_001", "루미", "레브 소개", "서버 전용 설정", weight);
+        Reve reve = Reve.of("REVE_001", "루미", Mbti.INFP, "레브 소개", "서버 전용 설정", weight);
 
         assertThat(reve.getId()).isNull();
         assertThat(reve.getCode()).isEqualTo("REVE_001");
         assertThat(reve.getName()).isEqualTo("루미");
+        assertThat(reve.getMbti()).isEqualTo(Mbti.INFP);
         assertThat(reve.getDescription()).isEqualTo("레브 소개");
         assertThat(reve.getSystemPrompt()).isEqualTo("서버 전용 설정");
         assertThat(reve.getTrialEnabled()).isTrue();
@@ -37,7 +39,7 @@ class ReveTest {
     void acceptsPositiveTrialWeights(String value) {
         BigDecimal weight = new BigDecimal(value);
 
-        Reve reve = Reve.of("REVE_001", "루미", "소개", "설정", weight);
+        Reve reve = Reve.of("REVE_001", "루미", null, "소개", "설정", weight);
 
         assertThat(reve.getTrialEnabled()).isTrue();
         assertThat(reve.getTrialWeight()).isEqualByComparingTo(weight);
@@ -51,14 +53,14 @@ class ReveTest {
         BigDecimal weight = value == null ? null : new BigDecimal(value);
 
         assertThatExceptionOfType(ServiceException.class)
-                .isThrownBy(() -> Reve.of("REVE_001", "루미", "소개", "설정", weight))
+                .isThrownBy(() -> Reve.of("REVE_001", "루미", null, "소개", "설정", weight))
                 .satisfies(exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT));
     }
 
     @Test
     @DisplayName("체험 대상에서 반복 제외해도 원본 설정과 가중치는 유지된다")
     void excludesFromTrialWithoutChangingOriginalSettings() {
-        Reve reve = Reve.of("REVE_001", "루미", "소개", "설정", new BigDecimal("1.25"));
+        Reve reve = Reve.of("REVE_001", "루미", null, "소개", "설정", new BigDecimal("1.25"));
 
         reve.exceptTrial();
         reve.exceptTrial();

@@ -60,7 +60,7 @@ class ChatRoomTest {
 
     private UserReve assignment() {
         User user = User.of("arvie", "user@example.com", "encoded-password");
-        Reve reve = Reve.of("REVE_FIRST", "루미", "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_FIRST", "루미", null, "소개", "설정", BigDecimal.ONE);
         return UserReve.of(user, reve);
     }
 }
