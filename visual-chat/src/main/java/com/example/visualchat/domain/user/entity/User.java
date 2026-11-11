@@ -1,6 +1,7 @@
 package com.example.visualchat.domain.user.entity;
 
 import com.example.visualchat.common.entity.BaseTimeEntity;
+import com.example.visualchat.domain.user.util.EmailNormalizer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -48,7 +49,7 @@ public class User extends BaseTimeEntity {
     @Builder
     private User(String nickname, String email, String passwordHash) {
         this.nickname = nickname;
-        this.email = email;
+        this.email = EmailNormalizer.normalizeDomain(email);
         this.passwordHash = passwordHash;
         this.signupCompletedAt = Instant.now();
     }

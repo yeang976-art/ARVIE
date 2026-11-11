@@ -16,6 +16,9 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
+          # [WHY] DB 예외 상세 메시지에 포함된 이메일 등의 로그 노출을 방지
+          log:
+            errors: false
 
 jwt:
   issuer: arvie # [NOTE] 발급 토큰의 iss 클레임에 사용할 서비스 식별값
