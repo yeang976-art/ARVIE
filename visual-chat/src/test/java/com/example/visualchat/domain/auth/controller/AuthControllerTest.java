@@ -2,6 +2,7 @@ package com.example.visualchat.domain.auth.controller;
 
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.domain.auth.service.AuthCommand;
+import com.example.visualchat.domain.auth.service.SignUpCommand;
 import com.example.visualchat.domain.user.entity.User;
 import com.example.visualchat.domain.user.repository.UserRepository;
 import com.example.visualchat.domain.user.service.UserService;
@@ -78,6 +79,8 @@ class AuthControllerTest {
     private JwtDecoder jwtDecoder;
     @MockitoBean
     private UserRepository userRepository;
+    @MockitoBean
+    private SignUpCommand signUpCommand;
 
     @Test
     @DisplayName("로그인에 성공하면 회원 ID와 만료 정보가 일치하는 토큰으로 보호 API를 호출할 수 있다")
