@@ -34,7 +34,11 @@ public enum ErrorCode {
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "ERROR_CHAT_ROOM_1", "채팅방을 찾을 수 없습니다."),
 
     // [TOPIC] AI 요청 오류 코드
-    INVALID_AI_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "ERROR_AI_REQUEST_1", "유효하지 않은 AI 요청 상태");
+    INVALID_AI_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "ERROR_AI_REQUEST_1", "유효하지 않은 AI 요청 상태"),
+    AI_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND,"ERROR_AI_REQUEST_2","AI 요청을 찾을 수 없습니다."),
+
+    // [TOPIC] 계정 이용 주기 오류 코드
+    USAGE_PERIOD_CHANGED(HttpStatus.CONFLICT, "ERROR_USAGE_1", "이용 주기가 변경되었습니다. 다시 요청해 주세요.");
 
 //  ======================================================================================================
 

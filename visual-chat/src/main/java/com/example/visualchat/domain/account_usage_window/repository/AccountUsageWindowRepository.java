@@ -11,4 +11,7 @@ public interface AccountUsageWindowRepository extends JpaRepository<AccountUsage
 
     // [TOPIC] 회원과 주기 시작 시각으로 이용 주기 조회
     Optional<AccountUsageWindow> findByUser_IdAndPeriodStartAt(Long userId, Instant periodStartAt);
+
+    // [TOPIC] 회원 소유 이용 주기를 식별자로 조회
+    Optional<AccountUsageWindow> findByIdAndUser_Id(Long windowId, Long userId);
 }
