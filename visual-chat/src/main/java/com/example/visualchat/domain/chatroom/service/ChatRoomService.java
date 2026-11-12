@@ -46,4 +46,11 @@ public class ChatRoomService {
 
         return ChatRoomResponse.from(chatRoom);
     }
+
+    // [TOPIC] 내부 요청 처리에 사용할 본인 소유 채팅방 조회
+    public ChatRoom getOwnedRoom(Long userId, Long roomId) {
+        return chatRoomRepository
+                .findByIdAndUser_Id(roomId, userId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+    }
 }

@@ -5,6 +5,7 @@ import com.example.visualchat.domain.reve.enums.Mbti;
 import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
 import com.example.visualchat.domain.ai_request.entity.AiRequest;
+import com.example.visualchat.domain.ai_request.model.AiTokenUsage;
 import com.example.visualchat.domain.ai_request.enums.AiRequestStatus;
 import com.example.visualchat.domain.chatroom.entity.ChatRoom;
 import com.example.visualchat.domain.message.enums.SenderType;
@@ -163,7 +164,7 @@ class MessageJpaTest {
     void deletingUserMessageKeepsCompletedAnswerAndParents() {
         Parents parents = parents("first");
         Message source = persistMessage(parents, parents.request(), SenderType.USER, "참고 원문");
-        parents.request().success(new BigDecimal("123.456789"));
+        parents.request().success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("123.456789"));
         Message answer = persistMessage(parents, parents.request(), SenderType.ASSISTANT, "이미 완성된 답변");
 
         entityManager.remove(source);
@@ -187,7 +188,7 @@ class MessageJpaTest {
     void deletingExpiredSourceAtBoundaryKeepsUnexpiredAnswer() {
         Parents parents = parents("first");
         Message source = persistMessage(parents, parents.request(), SenderType.USER, "만료될 원문");
-        parents.request().success(new BigDecimal("100"));
+        parents.request().success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("100"));
         Message answer = persistMessage(parents, parents.request(), SenderType.ASSISTANT, "보존할 답변");
         Instant sentAt = Instant.parse("2020-01-01T00:00:00Z");
         Instant cutoff = Instant.parse("2020-03-31T00:00:00Z");
@@ -260,7 +261,7 @@ class MessageJpaTest {
     }
 
     private AiRequest persistRequest(User user, ChatRoom room, AccountUsageWindow window, String key) {
-        AiRequest request = AiRequest.of(user, room, window, key, "a".repeat(64), "test-provider", "test-model",
+        AiRequest request = AiRequest.of(user, room, window, key, "a".repeat(64), "test-provider", "test-model", "test-v1",
                 new BigDecimal("200"), Instant.now().plusSeconds(60));
         entityManager.persist(request);
         entityManager.flush();

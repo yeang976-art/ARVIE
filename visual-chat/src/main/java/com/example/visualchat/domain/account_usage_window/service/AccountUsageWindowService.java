@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.account_usage_window.service;
 
+import com.example.visualchat.common.exception.ErrorCode;
+import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.account_usage_window.dto.UsageResponse;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
 import com.example.visualchat.domain.account_usage_window.model.UsagePeriod;
@@ -45,5 +47,13 @@ public class AccountUsageWindowService {
         AccountUsageWindow saved = accountUsageWindowRepository.saveAndFlush(window);
 
         return UsageResponse.from(saved);
+    }
+
+    // [TOPIC] 내부 정산에 사용할 회원 소유 이용 주기 조회
+    public AccountUsageWindow getOwnedWindow(Long userId, Long windowId) {
+        return accountUsageWindowRepository
+                .findByIdAndUser_Id(windowId, userId)
+                // [WHY] 저장된 요청과 연결된 이용 주기가 없으면 내부 데이터 불일치로 처리
+                .orElseThrow(() -> new ServiceException(ErrorCode.SERVER_ERROR));
     }
 }

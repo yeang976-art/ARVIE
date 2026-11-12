@@ -6,6 +6,7 @@ import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
 import com.example.visualchat.domain.ai_request.enums.AiRequestStatus;
+import com.example.visualchat.domain.ai_request.model.AiTokenUsage;
 import com.example.visualchat.domain.chatroom.entity.ChatRoom;
 import com.example.visualchat.domain.reve.entity.Reve;
 import com.example.visualchat.domain.reve.entity.UserReve;
@@ -70,7 +71,7 @@ class AiRequestJpaTest {
         assertThat(saved.getProviderRequestId()).isNull();
         assertThat(saved.getInputTokens()).isNull();
         assertThat(saved.getOutputTokens()).isNull();
-        assertThat(saved.getMeteringVersion()).isNull();
+        assertThat(saved.getMeteringVersion()).isEqualTo("test-v1");
         assertThat(entityManager.createNativeQuery("select status from ai_requests where id = :id")
                 .setParameter("id", id).getSingleResult()).isEqualTo("PROCESSING");
     }
@@ -83,7 +84,7 @@ class AiRequestJpaTest {
         Long version = request.getVersion();
 
         if (target == AiRequestStatus.SUCCEEDED) {
-            request.success(new BigDecimal("123.456789"));
+            request.success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("123.456789"));
         } else {
             request.fail(ErrorCode.SERVER_ERROR);
         }
@@ -221,7 +222,7 @@ class AiRequestJpaTest {
         AiRequest expired = entityManager.find(AiRequest.class, request.getId());
 
         assertThat(expired.getStatus()).isEqualTo(AiRequestStatus.PROCESSING);
-        expired.success(new BigDecimal("10.123456"));
+        expired.success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("10.123456"));
         entityManager.flush();
         entityManager.clear();
 
@@ -237,7 +238,7 @@ class AiRequestJpaTest {
         BigDecimal maximum = new BigDecimal("999999999999.999999");
         AiRequest request = create(parents, "k".repeat(128), maximum);
         entityManager.persist(request);
-        request.success(maximum);
+        request.success(new AiTokenUsage(1000, 0, 0, 0, 200), maximum);
         entityManager.flush();
         entityManager.createNativeQuery("""
                 update ai_requests
@@ -298,7 +299,7 @@ class AiRequestJpaTest {
         AiRequest stale = entityManager.find(AiRequest.class, request.getId());
         entityManager.detach(stale);
         AiRequest current = entityManager.find(AiRequest.class, request.getId());
-        current.success(new BigDecimal("123.456789"));
+        current.success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("123.456789"));
         entityManager.flush();
         entityManager.clear();
         stale.fail(ErrorCode.SERVER_ERROR);
@@ -373,7 +374,7 @@ class AiRequestJpaTest {
 
     private AiRequest create(Parents parents, String key, BigDecimal reservation) {
         return AiRequest.of(parents.user(), parents.room(), parents.window(), key, "a".repeat(64),
-                "test-provider", "test-model", reservation, Instant.now().plusSeconds(60));
+                "test-provider", "test-model", "test-v1", reservation, Instant.now().plusSeconds(60));
     }
 
     private Parents parents(String suffix) {
