@@ -33,7 +33,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-/** [ROLE] AI 요청의 식별 정보와 처리 상태·시간·VIE 정산 기록을 관리 */
+/**
+ * [ROLE] AI 요청의 식별 정보와 처리 상태·시간·VIE 정산 기록을 관리
+ */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -79,6 +81,41 @@ import java.util.UUID;
                                 processing_deadline_at > started_at
                                 and (finished_at is null or finished_at >= started_at)
                                 """
+                ),
+                // [WHY] 직접 SQL로 변경해도 캐시 사용량의 음수를 차단
+                @CheckConstraint(
+                        name = "ck_ai_requests_cache_tokens_nonnegative",
+                        constraint = """
+                                (cached_input_tokens is null or cached_input_tokens >= 0)
+                                and (cache_write_30m_tokens is null or cache_write_30m_tokens >= 0)
+                                and (cache_write_12h_tokens is null or cache_write_12h_tokens >= 0)
+                                """
+                ),
+                // [WHY] 캐시 사용량은 전체 입력의 일부이며 일반 입력과 중복 계산될 수 없음
+                @CheckConstraint(
+                        name = "ck_ai_requests_cache_token_total",
+                        constraint = """
+                                (
+                                    input_tokens is null
+                                    and cached_input_tokens is null
+                                    and cache_write_30m_tokens is null
+                                    and cache_write_12h_tokens is null
+                                )
+                                or
+                                (
+                                    input_tokens is not null
+                                    and (
+                                        cast(coalesce(cached_input_tokens, 0) as numeric)
+                                        + cast(coalesce(cache_write_30m_tokens, 0) as numeric)
+                                        + cast(coalesce(cache_write_12h_tokens, 0) as numeric)
+                                    ) <= input_tokens
+                                )
+                                """
+                ),
+                // [WHY] 엔티티 메서드를 우회해도 요청의 예약 상한보다 많이 차감하지 못하도록 보장
+                @CheckConstraint(
+                        name = "ck_ai_requests_charge_limit",
+                        constraint = "charged_vie <= reserved_vie"
                 )
         }
 )
