@@ -11,4 +11,7 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, UUID> {
 
     // [WHY] 요청 식별자와 회원을 함께 조회해 다른 회원의 요청 접근을 차단
     Optional<AiRequest> findByIdAndUser_Id(UUID requestId, Long userId);
+
+    // [WHY] 멱등키의 유일성 범위를 회원 단위로 제한
+    Optional<AiRequest> findByUser_IdAndIdempotencyKey(Long userId, String idempotencyKey);
 }
