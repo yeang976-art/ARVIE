@@ -97,7 +97,7 @@ class AccountUsageWindowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"19800.000001", "20000", "1000000000000"})
+    @ValueSource(strings = {"19800.000001", "20000", "999999999999.999999"})
     @DisplayName("기존 예약을 제외한 잔여량보다 큰 예약은 상태 변경 없이 거절한다")
     void rejectsAmountAboveRemainingBalance(String value) {
         AccountUsageWindow window = windowWithReservation();

@@ -4,6 +4,7 @@ import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
 import com.example.visualchat.domain.ai_request.enums.AiRequestStatus;
+import com.example.visualchat.domain.ai_request.model.AiTokenUsage;
 import com.example.visualchat.domain.chatroom.entity.ChatRoom;
 import com.example.visualchat.domain.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +52,7 @@ class AiRequestTest {
         assertThat(request.getProviderRequestId()).isNull();
         assertThat(request.getInputTokens()).isNull();
         assertThat(request.getOutputTokens()).isNull();
-        assertThat(request.getMeteringVersion()).isNull();
+        assertThat(request.getMeteringVersion()).isEqualTo("test-v1");
     }
 
     @ParameterizedTest
@@ -136,13 +137,13 @@ class AiRequestTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0", "0.000001", "123.456789000", "999999999999.999999"})
+    @ValueSource(strings = {"0", "0.000001", "123.456789000", "200"})
     @DisplayName("성공 시 실제 차감량과 완료 시각을 기록하고 최초 예약량은 보존한다")
     void succeedsWithExactCharge(String value) {
         AiRequest request = request();
         Instant before = Instant.now().minusNanos(1_000);
 
-        request.success(new BigDecimal(value));
+        request.success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal(value));
 
         assertThat(request.getStatus()).isEqualTo(AiRequestStatus.SUCCEEDED);
         assertThat(request.getChargedVie()).isEqualByComparingTo(value);
@@ -160,7 +161,7 @@ class AiRequestTest {
         BigDecimal charge = value == null ? null : new BigDecimal(value);
 
         assertThatExceptionOfType(ServiceException.class)
-                .isThrownBy(() -> request.success(charge))
+                .isThrownBy(() -> request.success(new AiTokenUsage(1000, 0, 0, 0, 200), charge))
                 .satisfies(exception -> {
                     assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT);
                     assertThat(exception.getMessage()).contains("차감량");
@@ -216,7 +217,7 @@ class AiRequestTest {
 
     private void complete(AiRequest request, AiRequestStatus status) {
         if (status == AiRequestStatus.SUCCEEDED) {
-            request.success(new BigDecimal("123.456789"));
+            request.success(new AiTokenUsage(1000, 0, 0, 0, 200), new BigDecimal("123.456789"));
         } else {
             request.fail(ErrorCode.SERVER_ERROR);
         }
@@ -236,7 +237,7 @@ class AiRequestTest {
 
     private AiRequest create(Parents parents, BigDecimal reservation, Instant deadline) {
         return AiRequest.of(parents.user(), parents.room(), parents.window(), "request-key", "a".repeat(64),
-                "test-provider", "test-model", reservation, deadline);
+                "test-provider", "test-model", "test-v1", reservation, deadline);
     }
 
     // [WHY] 요청 자체의 동작은 실제 엔티티로 검증하고 부모의 저장된 식별자만 테스트 대역으로 제공한다.
