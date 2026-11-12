@@ -8,4 +8,7 @@ public interface AiChatClient {
 
     // [CAUTION] 외부 호출이므로 DB 트랜잭션 밖에서 실행
     AiChatResult generate(AiChatRequest request);
+
+    // [NOTE] 답변 생성 전에 예약 계산에 사용할 입력 토큰 수를 조회
+    long countInputTokens(AiChatRequest request);
 }
