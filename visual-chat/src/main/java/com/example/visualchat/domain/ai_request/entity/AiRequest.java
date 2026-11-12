@@ -4,6 +4,7 @@ import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.account_usage_window.entity.AccountUsageWindow;
 import com.example.visualchat.domain.ai_request.enums.AiRequestStatus;
+import com.example.visualchat.domain.ai_request.model.AiTokenUsage;
 import com.example.visualchat.domain.chatroom.entity.ChatRoom;
 import com.example.visualchat.domain.user.entity.User;
 import jakarta.persistence.CheckConstraint;
@@ -189,6 +190,16 @@ public class AiRequest {
     @Column(nullable = false)
     private Long version;
 
+    // [WHY] 실제 차감액을 재검산할 수 있도록 캐시 유형별 사용량을 보존
+    @Column(name = "cached_input_tokens")
+    private Long cachedInputTokens;
+
+    @Column(name = "cache_write_30m_tokens")
+    private Long cacheWrite30mTokens;
+
+    @Column(name = "cache_write_12h_tokens")
+    private Long cacheWrite12hTokens;
+
     // [TOPIC] 요청 생성과 초기 상태 설정
     private AiRequest(
             User user,
@@ -198,6 +209,7 @@ public class AiRequest {
             String requestFingerprint,
             String provider,
             String modelName,
+            String meteringVersion,
             BigDecimal reservedVie,
             Instant processingDeadlineAt
     ) {
@@ -224,6 +236,11 @@ public class AiRequest {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "멱등키는 공백이 아닌 값이어야 합니다.");
         }
 
+        // [WHY] 처리 도중 요율이 바뀌어도 예약 당시의 정책으로 정산
+        if (meteringVersion == null || meteringVersion.isBlank() || meteringVersion.length() > 64) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "64자 이내의 환산 정책 버전이 필요합니다.");
+        }
+
         BigDecimal reservation = validateVie(reservedVie, "예약량");
         this.user = user;
         this.chatRoom = chatRoom;
@@ -235,6 +252,7 @@ public class AiRequest {
         this.status = AiRequestStatus.PROCESSING;
         this.provider = provider;
         this.modelName = modelName;
+        this.meteringVersion = meteringVersion;
         this.reservedVie = reservation;
         this.chargedVie = BigDecimal.ZERO; // [NOTE] 요청 생성 시에는 확정 차감이 발생하지 않음
         this.startedAt = start;
@@ -249,17 +267,44 @@ public class AiRequest {
             String requestFingerprint,
             String provider,
             String modelName,
+            String meteringVersion,
             BigDecimal reservedVie,
             Instant processingDeadlineAt
     ) {
-        return new AiRequest(user, chatRoom, accountUsageWindow, idempotencyKey, requestFingerprint,
-                provider, modelName, reservedVie, processingDeadlineAt);
+        return new AiRequest(
+                user,
+                chatRoom,
+                accountUsageWindow,
+                idempotencyKey,
+                requestFingerprint,
+                provider,
+                modelName,
+                meteringVersion,
+                reservedVie,
+                processingDeadlineAt);
     }
 
-    // [TOPIC] 요청 완료 처리와 성공·실패 정산
-    public void success(BigDecimal chargedVie) {
+    // [TOPIC] 실제 토큰 사용량과 최종 차감액을 기록하며 성공 처리
+    public void success(AiTokenUsage usage, BigDecimal chargedVie) {
+        if (usage == null) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "성공 정산에 필요한 토큰 사용량이 없습니다.");
+        }
+
         BigDecimal charge = validateVie(chargedVie, "차감량");
+
+        // [CAUTION] 예약 상한을 초과한 결과는 성공 처리하지 않고 별도 확인 대상으로 남김
+        if (charge.compareTo(this.reservedVie) > 0) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "차감량은 해당 요청의 예약량을 초과할 수 없습니다.");
+        }
+
+        // [WHY] 검증과 상태 전이 확인이 끝난 뒤에만 결과를 기록
         changeStatus(AiRequestStatus.SUCCEEDED);
+
+        this.inputTokens = usage.inputTokens();
+        this.cachedInputTokens = usage.cachedInputTokens();
+        this.cacheWrite30mTokens = usage.cacheWrite30mTokens();
+        this.cacheWrite12hTokens = usage.cacheWrite12hTokens();
+        this.outputTokens = usage.outputTokens();
         this.chargedVie = charge;
         this.finishedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
