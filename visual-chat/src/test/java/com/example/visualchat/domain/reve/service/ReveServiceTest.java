@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.reve.service;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.reve.entity.Reve;
@@ -179,6 +181,6 @@ class ReveServiceTest {
     }
 
     private Reve reve(String code, String weight) {
-        return Reve.of(code, "더미 레브 " + code, "테스트 소개", "테스트 설정", new BigDecimal(weight));
+        return Reve.of(code, "더미 레브 " + code, Mbti.ISTJ, "테스트 소개", "테스트 설정", new BigDecimal(weight));
     }
 }

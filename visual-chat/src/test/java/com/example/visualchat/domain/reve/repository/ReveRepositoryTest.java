@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.reve.repository;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.domain.reve.entity.Reve;
 import com.example.visualchat.domain.reve.service.ReveService;
 import com.example.visualchat.global.config.JpaAuditingConfig;
@@ -95,7 +97,7 @@ class ReveRepositoryTest {
     }
 
     private Reve persist(String code, BigDecimal weight) {
-        Reve reve = Reve.of(code, "더미 레브 " + code, "테스트 소개", "테스트 설정", weight);
+        Reve reve = Reve.of(code, "더미 레브 " + code, Mbti.ISTJ, "테스트 소개", "테스트 설정", weight);
         entityManager.persist(reve);
         return reve;
     }

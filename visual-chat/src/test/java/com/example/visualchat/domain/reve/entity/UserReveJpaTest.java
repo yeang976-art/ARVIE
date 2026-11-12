@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.reve.entity;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.global.config.JpaAuditingConfig;
 import com.example.visualchat.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -214,7 +216,7 @@ class UserReveJpaTest {
     }
 
     private Reve persistReve(String suffix) {
-        Reve reve = Reve.of("REVE_" + suffix, "루미", "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_" + suffix, "루미", Mbti.INFP, "소개", "설정", BigDecimal.ONE);
         entityManager.persist(reve);
         return reve;
     }

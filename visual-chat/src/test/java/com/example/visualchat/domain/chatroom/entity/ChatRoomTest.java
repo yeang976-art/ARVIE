@@ -1,5 +1,7 @@
 package com.example.visualchat.domain.chatroom.entity;
 
+import com.example.visualchat.domain.reve.enums.Mbti;
+
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.domain.reve.entity.Reve;
@@ -60,7 +62,7 @@ class ChatRoomTest {
 
     private UserReve assignment() {
         User user = User.of("arvie", "user@example.com", "encoded-password");
-        Reve reve = Reve.of("REVE_FIRST", "루미", "소개", "설정", BigDecimal.ONE);
+        Reve reve = Reve.of("REVE_FIRST", "루미", Mbti.INFP, "소개", "설정", BigDecimal.ONE);
         return UserReve.of(user, reve);
     }
 }
