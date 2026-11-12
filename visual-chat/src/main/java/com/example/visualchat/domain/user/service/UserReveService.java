@@ -36,4 +36,10 @@ public class UserReveService {
         // [WHY] 저장된 배정 결과를 사용해 반복 조회에도 같은 레브를 반환
         return UserReveResponse.from(userReve);
     }
+
+    // [TOPIC] 회원에게 배정된 특정 레브 확인
+    public UserReve getOwnedAssignment(Long userId, Long reveId) {
+        return userReveRepository.findByUser_IdAndReve_Id(userId, reveId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_REVE_NOT_FOUND));
+    }
 }
