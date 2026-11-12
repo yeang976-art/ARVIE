@@ -12,4 +12,8 @@ public interface UserReveRepository extends JpaRepository<UserReve, Long> {
     // [WHY] 응답 변환에 필요한 레브를 함께 조회하도록 지정
     @EntityGraph(attributePaths = "reve")
     Optional<UserReve> findByUser_Id(Long userId);
+
+    // [WHY] 인증 회원과 레브를 함께 조회해 본인에게 배정된 레브만 허용
+    @EntityGraph(attributePaths = "user")
+    Optional<UserReve> findByUser_IdAndReve_Id(Long userId, Long reveId);
 }
