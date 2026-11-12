@@ -63,6 +63,7 @@ public class AccountUsageWindow extends BaseTimeEntity {
 
     private static final long INITIAL_VIE = 20_000L;
     private static final int VIE_SCALE = 6;
+    private static final int VIE_PRECISION = 18;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -130,24 +131,74 @@ public class AccountUsageWindow extends BaseTimeEntity {
         return allowanceVie.subtract(usedVie).subtract(reservedVie);
     }
 
+    // [TOPIC] 추가 이용량 예약
     public void reserveVie(BigDecimal vie) {
-        if (vie == null || vie.signum() < 0) {
-            throw new ServiceException(ErrorCode.INVALID_INPUT, "예약량은 0 이상이어야 합니다.");
-        }
+        BigDecimal reservation = validateVie(vie, "예약량");
 
-        // [WHY] DB 저장 시 반올림되어 예약량이 바뀌지 않도록 값 손실이 있는 입력은 거절한다.
-        BigDecimal reservation;
-        try {
-            reservation = vie.setScale(VIE_SCALE, RoundingMode.UNNECESSARY);
-        } catch (ArithmeticException exception) {
-            throw new ServiceException(ErrorCode.INVALID_INPUT, "예약량은 소수점 6자리까지 입력할 수 있습니다.");
-        }
-
-        // [WHY] 이미 예약된 VIE도 제외한 잔여량을 기준으로 추가 예약 가능 여부를 판단
+        // [WHY] 진행 중인 다른 요청의 예약량도 제외한 잔여량으로 판단
         if (reservation.compareTo(getRemainingVie()) > 0) {
             throw new ServiceException(ErrorCode.INVALID_INPUT, "예약 가능한 VIE가 부족합니다.");
         }
-        // [WHY] 다른 진행 중인 요청의 예약량을 보존하기 위해 누적
+
         this.reservedVie = this.reservedVie.add(reservation);
+    }
+
+    // [TOPIC] 성공한 요청의 예약 해제와 실제 사용량 반영
+    public void settleVie(BigDecimal reservation, BigDecimal charge) {
+        BigDecimal normalizedReservation = validateVie(reservation, "예약량");
+        BigDecimal normalizedCharge = validateVie(charge, "차감량");
+
+        validateReservedBalance(normalizedReservation);
+
+        // [CAUTION] 예약 상한을 초과한 결과는 임의로 잘라 차감하지 않고 정산을 중단
+        if (normalizedCharge.compareTo(normalizedReservation) > 0) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "차감량은 해당 요청의 예약량을 초과할 수 없습니다.");
+        }
+
+        BigDecimal nextReservedVie = this.reservedVie.subtract(normalizedReservation);
+        BigDecimal nextUsedVie = this.usedVie.add(normalizedCharge);
+
+        // [WHY] 모든 검증을 마친 뒤 함께 변경해 검증 실패 시 기존 잔액을 유지
+        this.reservedVie = nextReservedVie;
+        this.usedVie = nextUsedVie;
+    }
+
+    // [TOPIC] 실패가 확정된 요청의 예약 해제
+    public void releaseVie(BigDecimal reservation) {
+        BigDecimal normalizedReservation = validateVie(reservation, "예약량");
+
+        validateReservedBalance(normalizedReservation);
+
+        // [WHY] 실패한 요청은 실제 사용량을 늘리지 않고 해당 예약량만 해제
+        this.reservedVie = this.reservedVie.subtract(normalizedReservation);
+    }
+
+    // [TOPIC] 활성 예약 잔액 검증
+    private void validateReservedBalance(BigDecimal reservation) {
+        if (reservation.compareTo(this.reservedVie) > 0) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, "해제할 예약량이 활성 예약 잔액을 초과했습니다.");
+        }
+    }
+
+    // [TOPIC] VIE 수량과 저장 정밀도 검증
+    private static BigDecimal validateVie(BigDecimal vie, String fieldName) {
+        if (vie == null || vie.signum() < 0) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, fieldName + "은 0 이상이어야 합니다.");
+        }
+
+        BigDecimal normalized;
+
+        try {
+            // [WHY] 엔티티에서는 환산 값을 반올림하지 않고 값 손실 여부를 검증
+            normalized = vie.setScale(VIE_SCALE, RoundingMode.UNNECESSARY);
+        } catch (ArithmeticException exception) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, fieldName + "은 소수점 6자리까지 입력할 수 있습니다.");
+        }
+
+        if (normalized.precision() > VIE_PRECISION) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT, fieldName + "이 저장 가능한 VIE 범위를 초과했습니다.");
+        }
+
+        return normalized;
     }
 }
