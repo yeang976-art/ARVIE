@@ -3,6 +3,8 @@ package com.example.visualchat.domain.user.controller;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
 import com.example.visualchat.common.response.ApiResponse;
+import com.example.visualchat.domain.account_usage_window.dto.UsageResponse;
+import com.example.visualchat.domain.account_usage_window.service.AccountUsageWindowCommand;
 import com.example.visualchat.domain.user.dto.UserMeResponse;
 import com.example.visualchat.domain.user.dto.UserReveResponse;
 import com.example.visualchat.domain.user.service.UserReveService;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** [ROLE] 인증된 회원의 본인 정보와 배정 레브 조회 요청을 처리 */
+/** [ROLE] 인증된 회원의 본인 정보·배정 레브·VIE 이용량 조회 요청을 처리 */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -23,6 +25,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserReveService userReveService;
+    private final AccountUsageWindowCommand accountUsageWindowCommand;
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserMeResponse>> getMyInfo(@AuthenticationPrincipal Jwt jwt) {
@@ -38,6 +41,15 @@ public class UserController {
         long userId = extractUserId(jwt);
 
         return ResponseEntity.ok(ApiResponse.ok(userReveService.getMyReve(userId)));
+    }
+
+    // [TOPIC] 계정의 현재 VIE 이용량과 이용 주기 조회
+    @GetMapping("/me/usage")
+    public ResponseEntity<ApiResponse<UsageResponse>> getMyUsage(@AuthenticationPrincipal Jwt jwt) {
+        // [WHY] 이용량 조회 대상을 인증된 회원으로 제한
+        long userId = extractUserId(jwt);
+
+        return ResponseEntity.ok(ApiResponse.ok(accountUsageWindowCommand.getCurrentUsage(userId)));
     }
 
     // [TOPIC] JWT의 회원 식별값을 양수 Long으로 변환

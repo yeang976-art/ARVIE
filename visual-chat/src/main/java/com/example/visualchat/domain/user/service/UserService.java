@@ -46,10 +46,13 @@ public class UserService {
 
     // [TOPIC] 인증된 회원의 본인 정보 조회
     public UserMeResponse getMyInfo(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
-
         // [CAUTION] 비밀번호 해시가 응답에 포함되지 않도록 전용 DTO로 변환
-        return UserMeResponse.from(user);
+        return UserMeResponse.from(getById(userId));
+    }
+
+    // [TOPIC] 회원 ID로 내부 처리에 필요한 회원 조회
+    public User getById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
     }
 }
