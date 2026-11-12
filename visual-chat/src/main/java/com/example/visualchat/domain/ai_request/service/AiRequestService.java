@@ -2,6 +2,7 @@ package com.example.visualchat.domain.ai_request.service;
 
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
+import com.example.visualchat.domain.ai_request.dto.AiRequestStatusResponse;
 import com.example.visualchat.domain.ai_request.entity.AiRequest;
 import com.example.visualchat.domain.ai_request.model.AiRequestSnapshot;
 import com.example.visualchat.domain.ai_request.model.IdempotencyKey;
@@ -41,5 +42,11 @@ public class AiRequestService {
         return aiRequestRepository
                 .findByUser_IdAndIdempotencyKey(userId, key.value())
                 .map(AiRequestSnapshot::from);
+    }
+
+    // [TOPIC] 본인 소유 AI 요청의 처리 상태 조회
+    public AiRequestStatusResponse getStatus(Long userId, UUID requestId) {
+        // [NOTE] 처리 기한이 지나도 조회 과정에서 상태나 예약량을 변경하지 않음
+        return AiRequestStatusResponse.from(getOwnedRequest(userId, requestId));
     }
 }
