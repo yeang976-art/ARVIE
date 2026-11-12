@@ -27,3 +27,15 @@ jwt:
 
 auth:
   dummy-password-hash: ${AUTH_DUMMY_PASSWORD_HASH}
+
+ai:
+  openai:
+    # [NOTE] 키가 없어도 서버는 기동하며 실제 호출 시 설정 여부를 검사
+    # [CAUTION] 실제 API 키는 환경변수로만 주입
+    api-key: ${OPENAI_API_KEY:}
+
+    # [NOTE] 외부 서버에 연결하기까지 허용할 시간
+    connect-timeout: 5s
+
+    # [NOTE] 개별 AI 호출에 적용할 요청 제한 시간
+    request-timeout: 30s

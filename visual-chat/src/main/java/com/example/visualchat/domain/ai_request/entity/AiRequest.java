@@ -356,6 +356,20 @@ public class AiRequest {
         this.finishedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
+    // [TOPIC] 처리 중인 요청에 제공사 응답 식별자 기록
+    public void recordProviderResponse(String responseId) {
+        if (responseId == null || responseId.isBlank() || responseId.length() > 255) {
+            throw new ServiceException(ErrorCode.AI_PROVIDER_INVALID_RESPONSE);
+        }
+
+        // [WHY] 완료된 요청이나 이미 연결한 응답 식별자를 덮어쓰지 않음
+        if (this.status != AiRequestStatus.PROCESSING || this.providerRequestId != null) {
+            throw new ServiceException(ErrorCode.INVALID_AI_REQUEST_STATUS);
+        }
+
+        this.providerRequestId = responseId;
+    }
+
     // [TOPIC] 정산 수량과 상태 전이 검증
     // [WHY] DB 저장 시 반올림 또는 범위 초과로 정산 금액이 달라지지 않도록 검증
     private static BigDecimal validateVie(BigDecimal vie, String fieldName) {

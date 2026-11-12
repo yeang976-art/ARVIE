@@ -37,6 +37,9 @@ public enum ErrorCode {
     INVALID_AI_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "ERROR_AI_REQUEST_1", "유효하지 않은 AI 요청 상태"),
     AI_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND,"ERROR_AI_REQUEST_2","AI 요청을 찾을 수 없습니다."),
     IDEMPOTENCY_KEY_CONFLICT(HttpStatus.CONFLICT, "ERROR_AI_REQUEST_3", "동일한 멱등키로 다른 요청을 보낼 수 없습니다."),
+    AI_PROVIDER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERROR_AI_REQUEST_4", "현재 AI 대화를 이용할 수 없습니다."),
+    AI_PROVIDER_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "ERROR_AI_REQUEST_5", "AI 응답 대기 시간이 초과되었습니다."),
+    AI_PROVIDER_INVALID_RESPONSE(HttpStatus.BAD_GATEWAY, "ERROR_AI_REQUEST_6", "AI 응답을 정상적으로 처리하지 못했습니다."),
 
     // [TOPIC] 계정 이용 주기 오류 코드
     USAGE_PERIOD_CHANGED(HttpStatus.CONFLICT, "ERROR_USAGE_1", "이용 주기가 변경되었습니다. 다시 요청해 주세요.");
