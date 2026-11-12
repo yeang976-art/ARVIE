@@ -3,6 +3,7 @@ package com.example.visualchat.domain.account_usage_window.entity;
 import com.example.visualchat.common.entity.BaseTimeEntity;
 import com.example.visualchat.common.exception.ErrorCode;
 import com.example.visualchat.common.exception.ServiceException;
+import com.example.visualchat.domain.account_usage_window.model.UsagePeriod;
 import com.example.visualchat.domain.user.entity.User;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
@@ -23,7 +24,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 /** [ROLE] 계정의 이용 기간과 VIE 제공량·사용량·활성 예약량을 관리 */
 @Getter
@@ -91,18 +91,37 @@ public class AccountUsageWindow extends BaseTimeEntity {
     @Column(nullable = false)
     private Long version;
 
-    // [TOPIC] 가입 완료 시각을 기준으로 첫 이용 주기 생성
-    private AccountUsageWindow(User user) {
+    // [TOPIC] 가입 기준에 맞는 이용 주기와 초기 VIE 생성
+    private AccountUsageWindow(User user, UsagePeriod period) {
+        if (user == null || period == null) {
+            throw new ServiceException(ErrorCode.SERVER_ERROR);
+        }
+
+        // [WHY] 직접 생성한 UsagePeriod도 가입 기준의 정확한 30일 구간인지 확인
+        UsagePeriod expected = UsagePeriod.from(user.getSignupCompletedAt(), period.startAt());
+
+        if (!expected.equals(period)) {
+            throw new ServiceException(ErrorCode.SERVER_ERROR);
+        }
+
         this.user = user;
-        this.periodStartAt = user.getSignupCompletedAt();
-        this.periodEndAt = this.periodStartAt.plus(PERIOD_DAYS, ChronoUnit.DAYS);
+        this.periodStartAt = period.startAt();
+        this.periodEndAt = period.endAt();
         this.allowanceVie = BigDecimal.valueOf(INITIAL_VIE);
-        this.usedVie = this.reservedVie = BigDecimal.ZERO;
+        this.usedVie = BigDecimal.ZERO;
+        this.reservedVie = BigDecimal.ZERO;
     }
 
-    // [NOTE] 첫 이용 주기는 가입 완료 시각을 기준으로 시작
+    // [TOPIC] 가입 시 첫 이용 주기 생성
     public static AccountUsageWindow of(User user) {
-        return new AccountUsageWindow(user);
+        UsagePeriod initialPeriod = UsagePeriod.from(user.getSignupCompletedAt(), user.getSignupCompletedAt());
+
+        return new AccountUsageWindow(user, initialPeriod);
+    }
+
+    // [TOPIC] 계산된 이용 주기로 새 행 생성
+    public static AccountUsageWindow of(User user, UsagePeriod period) {
+        return new AccountUsageWindow(user, period);
     }
 
     // [TOPIC] 잔여 VIE 조회와 추가 이용량 예약
